@@ -1,7 +1,8 @@
 import { Box, Button, Text, TextField, Image } from '@skynexui/components';
 import appConfig from '../config.json';
-import {useState} from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
+
 
 function Titulo(props) {
   const Tag = props.tag || 'h1';
@@ -21,14 +22,30 @@ function Titulo(props) {
 
 export default function PaginaInicial() {
   const [username, setUsername] = useState('douglaslundy');
+  const [company, setCompany] = useState({
+    company: 'DLSistemas',
+  });
+
   const router = useRouter();
 
-  function handleOnChangeInput(event){
+  function handleOnChangeInput(event) {
     event.preventDefault();
-    if(event.target.value.length > 3)
+    if (event.target.value.length > 3) {
       setUsername(event.target.value);
-      else 
-        setUsername('douglaslundy');
+
+      fetch('https://api.github.com/users/' + username)
+        .then((dadosApi) => {
+          return dadosApi.json()
+        })
+        .then((obj) => {
+          setCompany(obj);
+        });
+
+    }
+    else {
+      setUsername('douglaslundy');
+      setCompany({ company: 'DLSistemas' });
+    }
   }
 
   return (
@@ -59,7 +76,7 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
-            onSubmit={function(event){
+            onSubmit={function (event) {
               event.preventDefault();
               router.push('/404');
             }}
@@ -95,7 +112,7 @@ export default function PaginaInicial() {
                 mainColorLight: appConfig.theme.colors.primary[400],
                 mainColorStrong: appConfig.theme.colors.primary[600],
               }}
-            />           
+            />
           </Box>
           {/* Formulário */}
 
@@ -133,6 +150,15 @@ export default function PaginaInicial() {
               }}
             >
               {username}
+            </Text>
+            <Text
+              variant="body4"
+              styleSheet={{
+                color: appConfig.theme.colors.neutrals[200],
+                padding: '15px 10px',
+              }}
+            >
+              {company.company}
             </Text>
           </Box>
           {/* Photo Area */}
