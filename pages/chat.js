@@ -134,7 +134,7 @@ function MessageList(props) {
         <Box
             tag="ul"
             styleSheet={{
-                overflow: 'scroll',
+                overflow: 'hidden',
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
