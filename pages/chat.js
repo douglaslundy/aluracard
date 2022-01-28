@@ -1,24 +1,69 @@
 import { Box, Text, TextField, Image, Button } from '@skynexui/components';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import appConfig from '../config.json';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://gtoenrkiiypfwiirfsvh.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjQzMzI5NTg3LCJleHAiOjE5NTg5MDU1ODd9.wcFA3v-JqfPxlEIzYkQXYE6LcQeV0m55pCtSYRKz53g';
+
+const client = createClient(supabaseUrl, supabaseAnonKey);
 
 export default function ChatPage() {
 
     const [mensagem, setMensagem] = useState('');
     const [listMensagens, setListMensagens] = useState([]);
     const [username, setUsername] = useState('douglaslundy');
+    const [carregado, setCarregado] = useState(0);
+
+    useEffect(() => {
+        carregarDados()
+    }, []);
+
+    function carregarDados() {
+        client.from('chat')
+            .select('*')
+            .order('id', { ascending: false })
+            .then(({ data }) => {
+                console.log(data);
+                setListMensagens(data);
+            })
+            .then(() => {
+                setCarregado(1);
+            })
+    }
+
+    function exibeLoading(){
+        if (!carregado) {
+            return(
+                <Image
+                styleSheet={{
+                    width: '100%',
+                    height: '70%',
+                    display: 'inline-block',
+                    marginRight: '8px',
+                }}
+                src={`https://forums.gameex.com/forums/uploads/monthly_2019_10/465894441_ScaredStiff(Bally1996).gif.00fdabc9ccf7ccd24a97dbb56c130df6.gif`}
+            />
+            )
+        }
+    }
 
     function toSend(msg) {
         const mensagem = {
-            id: listMensagens.length + 1,
             de: username,
             texto: msg
         }
 
-        setListMensagens([
-            mensagem,
-            ...listMensagens
-        ]);
+        client.from('chat')
+            .insert([mensagem])
+            .then(({ data }) => {
+                console.log(data)
+                setListMensagens([
+                    data[0],
+                    ...listMensagens
+                ]);
+            })
+
         setMensagem('');
     }
 
@@ -28,6 +73,7 @@ export default function ChatPage() {
         }
 
     }
+
 
     function sendMensagem(event) {
         event.preventDefault();
@@ -76,7 +122,8 @@ export default function ChatPage() {
                         borderRadius: '5px',
                         padding: '16px',
                     }}
-                >
+                >                    
+                     {exibeLoading()}
 
                     <MessageList mensagens={listMensagens} />
 
@@ -134,7 +181,12 @@ function MessageList(props) {
         <Box
             tag="ul"
             styleSheet={{
+<<<<<<< HEAD
                 overflow: 'hidden',
+=======
+                overflow: 'auto',
+                overflowX: 'hidden',
+>>>>>>> af1a1c016e7ede034fbe44da9717f8a49692efe8
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
