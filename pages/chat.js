@@ -2,6 +2,8 @@ import { Box, Text, TextField, Image, Button } from '@skynexui/components';
 import React, { useState, useEffect } from 'react';
 import appConfig from '../config.json';
 import { createClient } from '@supabase/supabase-js';
+import { useRouter } from 'next/router';
+import { ButtonSendSticker } from '../src/compoments/ButtonSendSticker';
 
 const supabaseUrl = 'https://gtoenrkiiypfwiirfsvh.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNjQzMzI5NTg3LCJleHAiOjE5NTg5MDU1ODd9.wcFA3v-JqfPxlEIzYkQXYE6LcQeV0m55pCtSYRKz53g';
@@ -11,20 +13,38 @@ const client = createClient(supabaseUrl, supabaseAnonKey);
 export default function ChatPage() {
 
     const [mensagem, setMensagem] = useState('');
+    const roteamento = useRouter();
     const [listMensagens, setListMensagens] = useState([]);
-    const [username, setUsername] = useState('douglaslundy');
+    const username = roteamento.query.username;
     const [carregado, setCarregado] = useState(0);
 
+    function mensagensEmTempoReal(adicionaMensagem){
+        return client
+        .from('chat')
+        .on('INSERT', (resposta) =>{
+            adicionaMensagem(resposta.new);
+        })
+        .subscribe();
+    }
+    
     useEffect(() => {
-        carregarDados()
+        carregarDados();
+        
+        mensagensEmTempoReal((novaMensagem) =>{
+            setListMensagens((valorAtualDaLista) =>{
+                return [
+                    novaMensagem,
+                    ...valorAtualDaLista
+                ]
+            });
+        });
     }, []);
-
+   
     function carregarDados() {
         client.from('chat')
             .select('*')
             .order('id', { ascending: false })
             .then(({ data }) => {
-                console.log(data);
                 setListMensagens(data);
             })
             .then(() => {
@@ -57,11 +77,7 @@ export default function ChatPage() {
         client.from('chat')
             .insert([mensagem])
             .then(({ data }) => {
-                console.log(data)
-                setListMensagens([
-                    data[0],
-                    ...listMensagens
-                ]);
+                
             })
 
         setMensagem('');
@@ -150,7 +166,10 @@ export default function ChatPage() {
                                 marginRight: '12px',
                                 color: appConfig.theme.colors.neutrals[200],
                             }}
-                        /><Button onClick={sendMensagem} colorVariant="accent" iconName="arrowRight" />
+                        />
+                        <ButtonSendSticker onStickerClick={(sticker) =>{
+                            toSend(':sticker: ' + sticker )
+                        }} />
                     </Box>
                 </Box>
             </Box>
@@ -181,9 +200,13 @@ function MessageList(props) {
         <Box
             tag="ul"
             styleSheet={{
+<<<<<<< HEAD
                 overflow: 'hidden',
                 overflow: 'auto',
                 overflowX: 'hidden',
+=======
+                overflow: 'auto',
+>>>>>>> c3d06dc7eb7a6d92cdfab1d5c0cfaaaca3b0131c
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
@@ -218,10 +241,22 @@ function MessageList(props) {
                                         borderRadius: '50%',
                                         display: 'inline-block',
                                         marginRight: '8px',
+                                        hover: {
+                                            width: '240px',
+                                            height: '240px',
+                                        }
                                     }}
                                     src={`https://github.com/${mensagem.de}.png`}
                                 />
-                                <Text tag="strong">
+
+                                    
+
+
+                                <Text tag="strong" 
+                                styleSheet={{
+                                    color: appConfig.theme.colors.neutrals[300],
+                                }}
+                                >
                                     {mensagem.de}
                                 </Text>
                                 <Text
@@ -235,7 +270,11 @@ function MessageList(props) {
                                     {(new Date().toLocaleDateString())}
                                 </Text>
                             </Box>
-                            {mensagem.texto}
+                            {mensagem.texto.startsWith(':sticker:') ? (
+                                <Image styleSheet={{width: '100px'}} src={mensagem.texto.replace(':sticker:', '')} />
+                            ) : (
+                                mensagem.texto
+                            )}
                         </Text>
                     );
                 })
