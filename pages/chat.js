@@ -181,12 +181,9 @@ function MessageList(props) {
         <Box
             tag="ul"
             styleSheet={{
-<<<<<<< HEAD
                 overflow: 'hidden',
-=======
                 overflow: 'auto',
                 overflowX: 'hidden',
->>>>>>> af1a1c016e7ede034fbe44da9717f8a49692efe8
                 display: 'flex',
                 flexDirection: 'column-reverse',
                 flex: 1,
